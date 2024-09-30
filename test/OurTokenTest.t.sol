@@ -7,19 +7,17 @@ import {DeployOurToken} from "../script/DeployOurToken.s.sol";
 import {OurToken} from "src/OurToken.sol";
 
 contract OurTokenTest is Test {
-
     OurToken public ourToken;
     DeployOurToken public deployer;
 
-    address  Bob = makeAddr("Bob");
+    address Bob = makeAddr("Bob");
     address Alice = makeAddr("Alice");
 
     uint256 public constant STARTING_BALANCE = 100 ether;
 
-    function setUp() public  {
-
+    function setUp() public {
         deployer = new DeployOurToken();
-        ourToken = deployer.run();  
+        ourToken = deployer.run();
 
         vm.prank(msg.sender);
         ourToken.transfer(Bob, STARTING_BALANCE);
@@ -30,12 +28,11 @@ contract OurTokenTest is Test {
     }
 
     function testAllowanceWorks() public {
-        
         uint256 INITIAL_ALLOWANCE = 100 ether;
         // Bob will allow alice to use up to 1000
         vm.prank(Bob);
         ourToken.approve(Alice, INITIAL_ALLOWANCE);
-        
+
         // alice will use that from bob
         uint256 transerAmount = 100;
         vm.prank(Alice);
@@ -43,7 +40,6 @@ contract OurTokenTest is Test {
 
         assertEq(ourToken.balanceOf(Alice), transerAmount);
         assertEq(ourToken.balanceOf(Bob), STARTING_BALANCE - transerAmount);
-
     }
 
     function testTransfer() public {
@@ -60,7 +56,7 @@ contract OurTokenTest is Test {
     }
 
     function testFailInsufficientBalanceTransfer() public {
-        vm.prank(Alice); 
+        vm.prank(Alice);
         uint256 transferAmount = 200 ether; // Alice has 0 tokens, so this should fail
         vm.expectRevert("Insufficient Balance");
         ourToken.transfer(Bob, transferAmount);
@@ -76,5 +72,4 @@ contract OurTokenTest is Test {
         uint256 allowance = ourToken.allowance(Bob, Alice); // -> 50
         assertEq(allowance, allownaceAmount);
     }
-
 }
