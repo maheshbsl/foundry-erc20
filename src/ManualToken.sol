@@ -37,7 +37,7 @@ contract ManualToken {
      */
     constructor(string memory tokenName, string memory tokenSymbol, uint256 initailSupply) {
         totalSupply = initailSupply * 10 ** uint256(decimals); // eg   (33 * 10**18 )
-        balanceOf[msg.sender] = totalSupply;  // initially give all tokens to the creater. 
+        balanceOf[msg.sender] = totalSupply; // initially give all tokens to the creater.
         name = tokenName;
         symbol = tokenSymbol;
     }
@@ -49,16 +49,15 @@ contract ManualToken {
      * ensure that the sender has enough balance
      */
 
-    function _transfer(address from, address to , uint256 value) internal {
+    function _transfer(address from, address to, uint256 value) internal {
         require(to != address(0)); //not sending to address zero
-        require(balanceOf[from] >= value);  // ensure that sender has enough balance
+        require(balanceOf[from] >= value); // ensure that sender has enough balance
         require(balanceOf[to] + value >= balanceOf[to]); //check for overflow
         uint256 previoiusBalance = balanceOf[to] + balanceOf[from]; // for later assertion
         balanceOf[from] -= value; //subtract value from sender
         balanceOf[to] += value; // add value to recipient
         emit Transfer(from, to, value);
         assert(balanceOf[from] + balanceOf[to] == previoiusBalance);
-
     }
     /**
      * transfer funciton
@@ -68,15 +67,17 @@ contract ManualToken {
      * Returns a boolean value indicating whether the operation succeed or not
      * call a internal function _transfer
      */
-    function transfer(address to, uint256  value) public  returns (bool success) {
-       _transfer(msg.sender, to, value);
-       return true;
+
+    function transfer(address to, uint256 value) public returns (bool success) {
+        _transfer(msg.sender, to, value);
+        return true;
     }
     /**
-     * 
+     *
      * @param spender The person who is authorized to spend token
      * @param value The amount of token
      */
+
     function approve(address spender, uint256 value) public returns (bool success) {
         allowance[msg.sender][spender] = value; // caller approves spender to spend up to value
         emit Approve(msg.sender, spender, value);
@@ -84,16 +85,16 @@ contract ManualToken {
     }
 
     /**
-     * 
+     *
      * @param sender The person who has approved caller to  spend tokens
-     * @param to The recipient address 
+     * @param to The recipient address
      * @param value the token ammount
      * ensure to deduct the value from allowance
      */
     function transferFrom(address sender, address to, uint256 value) public returns (bool success) {
-        require(value <= allowance[sender][msg.sender]);  //previously sender has appreoved caller the spend token
+        require(value <= allowance[sender][msg.sender]); //previously sender has appreoved caller the spend token
         allowance[sender][msg.sender] -= value; // deduct the value from allowance
-        _transfer(sender, to , value);
+        _transfer(sender, to, value);
         return true;
     }
     /**
@@ -101,6 +102,7 @@ contract ManualToken {
      * ensure that the caller has enough balance
      * emit the event
      */
+
     function burn(uint256 value) public returns (bool success) {
         require(balanceOf[msg.sender] >= value); // ensure that the caller has enough balance
         balanceOf[msg.sender] -= value;
@@ -109,13 +111,13 @@ contract ManualToken {
         return true;
     }
     /**
-     * 
+     *
      * @param from The addres that give the caller the authority to spend tokens
      * @param value The amount of tokens the caller can spend
      */
 
     function burnFrom(address from, uint256 value) public returns (bool success) {
-        require(value <= allowance[from][msg.sender]);  // ensure that the allowance is greater than value
+        require(value <= allowance[from][msg.sender]); // ensure that the allowance is greater than value
         require(balanceOf[from] >= value); // ensure that user has enough balance
         balanceOf[from] -= value; //deduct the amount from target balance
         allowance[from][msg.sender] -= value; // deduct the amount of allowance
@@ -124,5 +126,26 @@ contract ManualToken {
         return true;
     }
 
-    
+    /**
+     *
+     * @param spender Address that is getting authority to spend more
+     * @param value The value to Increase as allowance
+     */
+    function increaseAllowance(address spender, uint256 value) public returns (bool success) {
+        allowance[msg.sender][spender] += value;
+        emit Approve(msg.sender, spender, allowance[msg.sender][spender]);
+        return true;
+    }
+
+    /**
+     * @param spender The address who has the authority to spend tokens on behalf of caller
+     * @param valuetoSubtract The value to subtract from total allowance
+     * @dev Make sure that the original allowance is greater than the decrement in allowance `valueToSubtract`.
+     */
+    function decreaseAllowance(address spender, uint256 valuetoSubtract) public returns (bool success) {
+        require(allowance[msg.sender][spender] >= valuetoSubtract);
+        allowance[msg.sender][spender] -= valuetoSubtract;
+        emit Approve(msg.sender, spender, allowance[msg.sender][spender]);
+        return true;
+    }
 }
